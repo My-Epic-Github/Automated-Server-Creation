@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.IO;
+using System.Threading;
 using System.Diagnostics;
 
 namespace MinecraftServerAutomated
@@ -39,8 +40,6 @@ namespace MinecraftServerAutomated
                         Console.Write(arg);
                     }
                     Console.WriteLine();
-                    sw.WriteLine("\nRem Alter the Xms value to adjust the minimum amount of memory dedicated");
-                    sw.WriteLine("Rem Alter the Xmx value to adjust the maximum amount of memory dedicated");
                     sw.Close();
                 }
 
@@ -52,9 +51,10 @@ namespace MinecraftServerAutomated
                     Console.WriteLine("Agreeing to eula..");
                     eulaContents = eulaContents.Replace("false", "true");
                     Console.WriteLine("Successfully agreed to eula");
+                    File.WriteAllText("Server\\eula.txt", eulaContents);
+                    Console.WriteLine(eulaContents);
+                    runBatchFile();
                 }
-                File.WriteAllText("Server\\eula.txt", eulaContents);
-                Console.WriteLine(eulaContents);
 
 
 
@@ -75,9 +75,11 @@ namespace MinecraftServerAutomated
         {
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
-                FileName = "Server\\run.bat",
+                WorkingDirectory = Directory.GetCurrentDirectory() + "\\Server\\",
+                FileName = "cmd.exe",
+                Arguments = "/C run.bat",
                 UseShellExecute = false,
-                CreateNoWindow = false
+                CreateNoWindow = false,
             };
 
             using (Process process = Process.Start(startInfo))
