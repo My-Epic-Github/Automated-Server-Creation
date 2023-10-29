@@ -11,27 +11,37 @@ namespace MinecraftServerAutomated
         {
             try
             {
+                string path = string.Empty;
+
                 string fileUrl = "https://piston-data.mojang.com/v1/objects/5b868151bd02b41319f54c8d4061b8cae84e665c/server.jar";
 
                 string[] jvmArgs = { "java ", "-Xms512M ", "-Xmx1G ", "-jar server.jar ", "nogui " };
 
-                if (!Directory.Exists("Server"))
+                Console.WriteLine("Input output path:\n");
+                path = Console.ReadLine() + "\\Server";
+
+                if (path == "")
                 {
-                    Directory.CreateDirectory("Server");
+                    Console.WriteLine("Defaulting to default directory..\n");
+                    path = "Server\\";
+                }
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
                 }
 
 
-                if (!File.Exists("Server\\server.jar"))
+                if (!File.Exists($"{path}\\server.jar"))
                 {
                     using (WebClient webClient = new WebClient())
                     {
                         Console.WriteLine("Downloading Server.jar..");
-                        webClient.DownloadFile(fileUrl, "Server\\server.jar");
+                        webClient.DownloadFile(fileUrl, $"{path}\\server.jar");
                         Console.WriteLine($"Downloaded {fileUrl} successfully!");
                     }
                 }
 
-                using (StreamWriter sw = new StreamWriter("Server\\run.bat", false))
+                using (StreamWriter sw = new StreamWriter($"{path}\\run.bat", false))
                 {
                     foreach (string arg in jvmArgs)
                     {
@@ -42,17 +52,17 @@ namespace MinecraftServerAutomated
                     sw.Close();
                 }
 
-                runBatchFile();
+                runBatchFile(path);
                 
-                String eulaContents = File.ReadAllText("Server\\eula.txt");
+                String eulaContents = File.ReadAllText($"{path}\\eula.txt");
                 if (eulaContents.Contains("false"))
                 {
                     Console.WriteLine("Agreeing to eula..");
                     eulaContents = eulaContents.Replace("false", "true");
                     Console.WriteLine("Successfully agreed to eula");
-                    File.WriteAllText("Server\\eula.txt", eulaContents);
+                    File.WriteAllText($"{path}\\eula.txt", eulaContents);
                     Console.WriteLine(eulaContents);
-                    runBatchFile();
+                    runBatchFile(path);
                 }
 
 
@@ -70,11 +80,11 @@ namespace MinecraftServerAutomated
                 Console.ReadLine();
             }
         }
-        static void runBatchFile()
+        static void runBatchFile(string path)
         {
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
-                WorkingDirectory = Directory.GetCurrentDirectory() + "\\Server\\",
+                WorkingDirectory = Path.GetFullPath(path),
                 FileName = "cmd.exe",
                 Arguments = "/C run.bat",
                 UseShellExecute = false,
